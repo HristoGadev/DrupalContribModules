@@ -1,0 +1,5 @@
+query_builder_style:
+  version: 1.x
+  css:
+    theme:
+      css/style.css: {}

@@ -1,0 +1,23 @@
+
+.tableSelect{
+    float: left;
+}
+.tableSelectRemove{
+    float: left;
+    margin: 30px;
+}
+.join{
+    float: left;
+}
+.joinRemove{
+    float: left;
+    margin: 30px;
+}
+
+.conditions{
+    float: left;
+}
+.conditionsRemove{
+    float: left;
+    margin: 30px;
+}

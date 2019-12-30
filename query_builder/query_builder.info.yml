@@ -1,0 +1,9 @@
+name: Query builder
+description: Generate MySQL queries by conditions
+package: Custom
+type: module
+version: 1.0
+core: 8.x
+
+libraries:
+  - query_builder/query_builder_style

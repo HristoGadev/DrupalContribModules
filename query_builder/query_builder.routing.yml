@@ -1,0 +1,9 @@
+query_builder.query_builder:
+  path: '/admin/config/query-builder'
+  defaults:
+    _title: 'Query builder'
+    _controller: '\Drupal\query_builder\Controller\SelectQueryController::getSelectForm'
+  requirements:
+    _permission: 'access content'
+
+
