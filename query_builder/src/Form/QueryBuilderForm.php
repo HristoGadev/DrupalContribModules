@@ -1016,10 +1016,8 @@ class QueryBuilderForm extends FormBase
 
         foreach ($values['select'] as $wrappers) {
             foreach ($wrappers as $wrapper) {
-                $table = $wrapper["table_name"];
-                $column = $wrapper["table_column"];
-                $query->fields("$table", ["$column"]);
-                $selectArr = ["table" => "$table", "field" => "$column"];
+              $query->fields($wrapper["table_name"], [$wrapper["table_column"]]);
+                $selectArr = ["table" => $wrapper["table_name"], "field" => $wrapper["table_column"]];
                 $selectString = strtr("$" . "query->addField('table','field');" . "\n", $selectArr);
                 $resultQuery .= $selectString;
             }
@@ -1047,19 +1045,16 @@ class QueryBuilderForm extends FormBase
             }
             if ($table_first_join !== '' && $table_second_join !== '' && $condition_table !== '' && $condition_column !== '') {
                 foreach ($values['join'] as $wrappers) {
-                    foreach ($wrappers as $wrapper) {
-                        $join_type = $wrapper["join_type"];
-                        $table_first = $wrapper["table_name_join"];
-                        $column_first = $wrapper["column_name_join"];
-                        $condition_join = $wrapper["condition_join"];
-                        $table_second = $wrapper["table_name1_join"];
-                        $column_second = $wrapper["column_name1_join"];
+
+                  // TODO: Create join types
+                  foreach ($wrappers as $wrapper) {
                         $query->join(
-                            "$table_first", "$table_first",
-                            "$table_first" . "." . "$column_first" . "$condition_join" . "$table_second" . "." . "$column_second"
+                          $wrapper["table_name_join"], $wrapper["table_name_join"],
+                          $wrapper["table_name_join"] . "." . $wrapper["column_name_join"] . $wrapper["condition_join"] . $wrapper["table_name1_join"] . "." . $wrapper["column_name1_join"]
                         );
-                        $joinArr = ["joinType" => $join_type, "table" => $table_first, "alias" => $table_first, "table_first" => $table_first, "column_first" => $column_first,
-                            "condition_join" => $condition_join, "table_second" => $table_second, "column_second" => $column_second];
+                        $joinArr = ["joinType" => $wrapper["join_type"], "table" => $wrapper["table_name_join"], "alias" => $wrapper["table_name_join"], "table_first" => $wrapper["table_name_join"],
+                            "column_first" => $wrapper["column_name_join"],
+                            "condition_join" => $wrapper["condition_join"], "table_second" => $wrapper["table_name1_join"], "column_second" => $wrapper["column_name1_join"]];
                         $joinString = strtr(
                             "$" . "query->join('table','alias','table_first.column_first condition_join table_second.column_second');"
                             . "\n", $joinArr
@@ -1094,8 +1089,6 @@ class QueryBuilderForm extends FormBase
     {
         $rows = [];
         $header = [];
-
-
         foreach ($result as $content) {
             $valuesArr = [];
             foreach ($content as $key => $value) {
@@ -1109,8 +1102,6 @@ class QueryBuilderForm extends FormBase
         $form_state->set('result_string', $resultQuery);
         $form_state->set('result_header', $header);
         $form_state->set('result_rows', $rows);
-
-
         $form_state->setRebuild();
     }
 
@@ -1154,12 +1145,11 @@ class QueryBuilderForm extends FormBase
     private function getAllTables(array $form, FormStateInterface $form_state)
     {
         $values = $form_state->getUserInput();
-
         $table = $values["select_main"]["table_name_main"];
-
         $condition_tables = [];
         $condition_columns = [];
 
+      // TODO: Create foreach
         if ($table !== null) {
           foreach ($values as $value) {
             $condition_tables[$table] = $table;
@@ -1192,14 +1182,10 @@ class QueryBuilderForm extends FormBase
                     }
                 }
             }
-            $form_state->set('used_columns', $condition_columns);
-            $form_state->set('used_tables', $condition_tables);
-            $form_state->setRebuild();
-        } else {
-            $form_state->set('used_columns', $condition_columns);
-            $form_state->set('used_tables', $condition_tables);
-            $form_state->setRebuild();
         }
+        $form_state->set('used_columns', $condition_columns);
+        $form_state->set('used_tables', $condition_tables);
+        $form_state->setRebuild();
     }
 
   private function queryResult($form, $form_state,$query,$resultQuery)
@@ -1217,18 +1203,14 @@ class QueryBuilderForm extends FormBase
   {
     foreach ($values['condition_from'] as $wrappers) {
       foreach ($wrappers as $wrapper) {
-        $table_condition = $wrapper["table_name_condition"];
-        $column_condition = $wrapper["table_column_condition"];
-        $conditions = $wrapper["condition"];
-        $condition_value = $wrapper["condition_value"];
-        $conditionArray = ["table" => $table_condition, "field" => $column_condition, "conditions" => $condition_value, "operator" => $conditions];
+        $conditionArray = ["table" => $wrapper["table_name_condition"], "field" => $wrapper["table_column_condition"], "conditions" => $wrapper["condition_value"], "operator" => $wrapper["condition"]];
 
-        if ($conditions === 'IS NULL' || $conditions === 'IS NOT NULL') {
-          $query->condition("$table_condition" . "." . "$column_condition", "$conditions");
+        if ($wrapper["condition"] === 'IS NULL' || $wrapper["condition"] === 'IS NOT NULL') {
+          $query->condition($wrapper["table_name_condition"] . "." . $wrapper["table_column_condition"], $wrapper["condition"]);
           $conditionQuery = strtr("$" . "query->condition('table.field','operator');" . "\n", $conditionArray);
           $resultQuery .= $conditionQuery;
         } else {
-          $query->condition("$table_condition" . "." . "$column_condition", "$condition_value", "$conditions");
+          $query->condition($wrapper["table_name_condition"] . "." . $wrapper["table_column_condition"], $wrapper["condition_value"], $wrapper["condition"]);
           $conditionQuery = strtr("$" . "query->condition('table.field','conditions','operator');" . "\n", $conditionArray);
           $resultQuery .= $conditionQuery;
         }
